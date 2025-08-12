@@ -26,23 +26,37 @@ const RegisterScreen = ({ navigation }) => {
     setLoading(true);
     
     try {
-      // Replace with your actual backend URL
-      const response = await axios.post('http://localhost:5003/api/auth/register', {
+      console.log('Attempting to register user:', { name, email, phone, userType, language });
+      const requestData = {
         name,
         email,
         password,
         phone,
         userType,
         language
-      });
+      };
+      console.log('Registration request data:', requestData);
+console.log('Sending registration request to:', '/auth/register');
+      const response = await api.post('/auth/register', requestData);
+      console.log('Registration response:', response.data);
+      console.log('Registration response status:', response.status);
       
       setLoading(false);
       Alert.alert(
-        'Success', 
+        'Success',
         'Registration successful',
-        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+        [{ text: 'OK', onPress: () => {
+          // Call onLogin function if provided
+          if (navigation.getParam) {
+            const onLogin = navigation.getParam('onLogin');
+            if (onLogin) onLogin();
+          }
+          navigation.navigate('Login');
+        }}]
       );
     } catch (error) {
+      console.error('Registration error:', error);
+      console.log('Error response:', error.response?.data);
       setLoading(false);
       Alert.alert('Error', error.response?.data?.message || 'Registration failed');
     }

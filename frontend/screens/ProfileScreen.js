@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import axios from 'axios';
+import api from '../services/api';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -20,16 +20,13 @@ const ProfileScreen = () => {
 
   const fetchProfile = async () => {
     try {
-      // Replace with your actual backend URL
-      // const response = await axios.get('http://localhost:5000/api/user/profile', {
-      //   headers: { Authorization: `Bearer ${accessToken}` }
-      // });
+      const response = await api.get('/user/profile');
+      const { user } = response.data;
       
-      // For demo purposes, using mock data
-      setName('John Doe');
-      setEmail('john@example.com');
-      setPhone('+91 9876543210');
-      setLanguage('en');
+      setName(user.name);
+      setEmail(user.email);
+      setPhone(user.phone || '');
+      setLanguage(user.language || 'en');
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch profile data');
     }
@@ -37,13 +34,8 @@ const ProfileScreen = () => {
 
   const fetchUserPoints = async () => {
     try {
-      // Replace with your actual backend URL
-      // const response = await axios.get('http://localhost:5000/api/user/points', {
-      //   headers: { Authorization: `Bearer ${accessToken}` }
-      // });
-      
-      // For demo purposes, using mock data
-      setPoints(1250);
+      const response = await api.get('/user/points');
+      setPoints(response.data.points || 0);
     } catch (error) {
       // Alert.alert('Error', 'Failed to fetch points');
     }
@@ -51,17 +43,8 @@ const ProfileScreen = () => {
 
   const fetchUserAchievements = async () => {
     try {
-      // Replace with your actual backend URL
-      // const response = await axios.get('http://localhost:5000/api/user/achievements', {
-      //   headers: { Authorization: `Bearer ${accessToken}` }
-      // });
-      
-      // For demo purposes, using mock data
-      setAchievements([
-        { id: 1, name: 'First Budget', description: 'Created your first budget plan', points: 100 },
-        { id: 2, name: 'Quiz Master', description: 'Scored 100% in Financial Basics quiz', points: 250 },
-        { id: 3, name: 'Safety First', description: 'Reported a potential fraud', points: 500 },
-      ]);
+      const response = await api.get('/user/achievements');
+      setAchievements(response.data.achievements || []);
     } catch (error) {
       // Alert.alert('Error', 'Failed to fetch achievements');
     }
@@ -76,14 +59,11 @@ const ProfileScreen = () => {
     setLoading(true);
     
     try {
-      // Replace with your actual backend URL
-      // const response = await axios.put('http://localhost:5000/api/user/profile', {
-      //   name,
-      //   phone,
-      //   language
-      // }, {
-      //   headers: { Authorization: `Bearer ${accessToken}` }
-      // });
+      await api.put('/user/profile', {
+        name,
+        phone,
+        language
+      });
       
       setLoading(false);
       Alert.alert('Success', 'Profile updated successfully');

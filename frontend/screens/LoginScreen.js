@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -16,23 +17,34 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
     
     try {
-      // Replace with your actual backend URL
-      const response = await axios.post('http://localhost:5003/api/auth/login', {
+      console.log('Attempting to login user:', { email });
+      const response = await api.post('/auth/login', {
         email,
         password
       });
+      console.log('Login response:', response.data);
       
       const { accessToken, refreshToken } = response.data;
       
-      // Store tokens (in a real app, use secure storage)
-      // await SecureStore.setItemAsync('accessToken', accessToken);
-      // await SecureStore.setItemAsync('refreshToken', refreshToken);
+      // Store tokens in AsyncStorage
+      try {
+        await AsyncStorage.setItem('token', accessToken);
+        await AsyncStorage.setItem('refreshToken', refreshToken);
+        console.log('Tokens stored successfully');
+      } catch (storageError) {
+        console.error('Error storing tokens:', storageError);
+      }
       
       setLoading(false);
       Alert.alert('Success', 'Login successful');
-      // Navigate to main app
-      // navigation.replace('Main');
+      // Call onLogin function if provided
+      if (navigation.getParam) {
+        const onLogin = navigation.getParam('onLogin');
+        if (onLogin) onLogin();
+      }
     } catch (error) {
+      console.error('Login error:', error);
+      console.log('Error response:', error.response?.data);
       setLoading(false);
       Alert.alert('Error', error.response?.data?.message || 'Login failed');
     }

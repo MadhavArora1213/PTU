@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
 import { ProgressCircle } from 'react-native-svg-charts';
+import api from '../services/api';
 
 const QuizScreen = () => {
   const [quizzes, setQuizzes] = useState([]);
@@ -9,93 +10,38 @@ const QuizScreen = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [userPoints, setUserPoints] = useState(1250); // Mock user points
-  const [achievements, setAchievements] = useState([]); // Mock achievements
+  const [userPoints, setUserPoints] = useState(0); // Will be fetched from backend
+  const [achievements, setAchievements] = useState([]); // Will be fetched from backend
 
   useEffect(() => {
-    // Fetch quizzes
+    // Fetch quizzes and user data
     fetchQuizzes();
+    fetchUserData();
   }, []);
 
   const fetchQuizzes = async () => {
     try {
-      // Replace with your actual backend URL
-      // const response = await axios.get('http://localhost:5000/api/quiz');
+      const response = await api.get('/quiz');
       
-      // For demo purposes, using mock data
-      setQuizzes([
-        {
-          id: 1,
-          title: "Financial Basics",
-          description: "Test your knowledge of basic financial concepts",
-          questions: [
-            {
-              id: 1,
-              question: "What is the primary purpose of an emergency fund?",
-              options: [
-                "To invest in stocks",
-                "To cover unexpected expenses",
-                "To pay off credit card debt",
-                "To save for vacation"
-              ],
-              correctAnswer: 1
-            },
-            {
-              id: 2,
-              question: "Which of the following is NOT a type of investment?",
-              options: [
-                "Stocks",
-                "Bonds",
-                "Savings Account",
-                "Real Estate"
-              ],
-              correctAnswer: 2
-            },
-            {
-              id: 3,
-              question: "What does APR stand for?",
-              options: [
-                "Annual Percentage Rate",
-                "Average Payment Return",
-                "Annual Payment Ratio",
-                "Average Percentage Return"
-              ],
-              correctAnswer: 0
-            }
-          ]
-        },
-        {
-          id: 2,
-          title: "Investment Strategies",
-          description: "Test your knowledge of investment strategies",
-          questions: [
-            {
-              id: 1,
-              question: "What is diversification in investing?",
-              options: [
-                "Investing all money in one stock",
-                "Spreading investments across different assets",
-                "Investing only in government bonds",
-                "Avoiding all investment risks"
-              ],
-              correctAnswer: 1
-            },
-            {
-              id: 2,
-              question: "What is compound interest?",
-              options: [
-                "Interest paid only on the principal amount",
-                "Interest paid on both principal and accumulated interest",
-                "A fee charged by banks",
-                "A type of investment tax"
-              ],
-              correctAnswer: 1
-            }
-          ]
-        }
-      ]);
+      // Use actual data from backend
+      setQuizzes(response.data.quizzes || []);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch quizzes');
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      // Fetch user points
+      const pointsResponse = await api.get('/user/points');
+      setUserPoints(pointsResponse.data.points || 0);
+      
+      // Fetch user achievements
+      const achievementsResponse = await api.get('/user/achievements');
+      setAchievements(achievementsResponse.data.achievements || []);
+    } catch (error) {
+      // If we can't fetch user data, continue with defaults
+      console.log('Failed to fetch user data, using defaults');
     }
   };
 

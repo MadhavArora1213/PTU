@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Modal } from 'react-native';
 import { PieChart } from 'react-native-svg-charts';
 import { G, Line, Circle } from 'react-native-svg';
-import axios from 'axios';
+import api from '../services/api';
 
 const BudgetPlannerScreen = () => {
   const [income, setIncome] = useState('');
@@ -22,19 +22,23 @@ const BudgetPlannerScreen = () => {
 
   const fetchBudgetPlans = async () => {
     try {
-      // Replace with your actual backend URL
-      const response = await axios.get('http://localhost:5003/api/financial/budget');
+      const response = await api.get('/financial/budget');
       
       setBudgetPlans(response.data.budgetPlans);
       
-      // For demo purposes, using mock data for categories
-      setCategories([
-        { id: 1, name: 'Rent', amount: 15000, color: '#2E8B57' },
-        { id: 2, name: 'Groceries', amount: 8000, color: '#FFD700' },
-        { id: 3, name: 'Utilities', amount: 5000, color: '#32CD32' },
-        { id: 4, name: 'Entertainment', amount: 4000, color: '#90EE90' },
-        { id: 5, name: 'Transport', amount: 3000, color: '#8FBC8F' },
-      ]);
+      // Fetch categories from the response or use default if not provided
+      if (response.data.categories && response.data.categories.length > 0) {
+        setCategories(response.data.categories);
+      } else {
+        // Default categories if none provided from backend
+        setCategories([
+          { id: 1, name: 'Rent', amount: 15000, color: '#2E8B57' },
+          { id: 2, name: 'Groceries', amount: 8000, color: '#FFD700' },
+          { id: 3, name: 'Utilities', amount: 5000, color: '#32CD32' },
+          { id: 4, name: 'Entertainment', amount: 4000, color: '#90EE90' },
+          { id: 5, name: 'Transport', amount: 3000, color: '#8FBC8F' },
+        ]);
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch budget plans');
     }
@@ -49,8 +53,7 @@ const BudgetPlannerScreen = () => {
     setLoading(true);
     
     try {
-      // Replace with your actual backend URL
-      const response = await axios.post('http://localhost:5003/api/financial/budget', {
+      const response = await api.post('/financial/budget', {
         month: new Date().getMonth() + 1,
         year: new Date().getFullYear(),
         income: parseFloat(income),

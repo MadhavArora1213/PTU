@@ -91,11 +91,11 @@ function MainDrawer() {
 }
 
 // Authentication stack
-function AuthStack() {
+function AuthStack({ onLogin }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} initialParams={{ onLogin }} />
+      <Stack.Screen name="Register" component={RegisterScreen} initialParams={{ onLogin }} />
     </Stack.Navigator>
   );
 }
@@ -104,9 +104,14 @@ function AuthStack() {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
+  const handleLogin = () => {
+    console.log('handleLogin called');
+    setIsLoggedIn(true);
+  };
+
   return (
     <NavigationContainer>
-      {isLoggedIn ? <MainDrawer /> : <AuthStack />}
+      {isLoggedIn ? <MainDrawer /> : <AuthStack onLogin={handleLogin} />}
     </NavigationContainer>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Modal } from 'react-native';
 import GoalProgressChart from '../components/GoalProgressChart';
+import api from '../services/api';
 
 const FinancialGoalsScreen = () => {
   const [goals, setGoals] = useState([]);
@@ -18,8 +19,7 @@ const FinancialGoalsScreen = () => {
 
   const fetchFinancialGoals = async () => {
     try {
-      // Replace with your actual backend URL
-      const response = await axios.get('http://localhost:5003/api/financial/goals');
+      const response = await api.get('/financial/goals');
       
       setGoals(response.data.goals);
     } catch (error) {
@@ -34,8 +34,7 @@ const FinancialGoalsScreen = () => {
     }
 
     try {
-      // Replace with your actual backend URL
-      const response = await axios.post('http://localhost:5003/api/financial/goals', {
+      const response = await api.post('/financial/goals', {
         goalType,
         targetAmount: parseFloat(targetAmount),
         targetDate
@@ -62,8 +61,7 @@ const FinancialGoalsScreen = () => {
 
       const newCurrentAmount = goal.currentAmount + parseFloat(contributionAmount);
       
-      // Replace with your actual backend URL
-      const response = await axios.put(`http://localhost:5003/api/financial/goals/${goalId}`, {
+      const response = await api.put(`/financial/goals/${goalId}`, {
         currentAmount: newCurrentAmount
       });
       
@@ -91,8 +89,7 @@ const FinancialGoalsScreen = () => {
 
   const deleteFinancialGoal = async (goalId) => {
     try {
-      // Replace with your actual backend URL
-      const response = await axios.delete(`http://localhost:5003/api/financial/goals/${goalId}`);
+      const response = await api.delete(`/financial/goals/${goalId}`);
       
       // Update local state
       const updatedGoals = goals.filter(g => g.id !== goalId);

@@ -1,18 +1,34 @@
 const { Pool } = require('pg');
+const dotenv = require('dotenv');
 
+dotenv.config();
+
+// Use the DATABASE_URL from .env file
 const pool = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_i8e5kVIEBqDv@ep-round-resonance-a11eisog-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   }
 });
 
-pool.query('SELECT column_name, data_type FROM information_schema.columns WHERE table_name = \'users\'', (err, res) => {
+// Test the connection
+pool.query('SELECT NOW()', (err, res) => {
   if (err) {
-    console.error('Error:', err);
+    console.error('Database connection error:', err);
   } else {
-    console.log('Users table columns:');
-    res.rows.forEach(row => console.log(row.column_name, row.data_type));
+    console.log('Database connected successfully');
+    
+    // Check all users in the database
+    pool.query('SELECT id, name, email, user_type, language, created_at FROM users ORDER BY created_at DESC', (err, res) => {
+      if (err) {
+        console.error('Error fetching users:', err);
+      } else {
+        console.log('Users in database:');
+        res.rows.forEach(row => {
+          console.log(`  ID: ${row.id}, Name: ${row.name}, Email: ${row.email}, Type: ${row.user_type}, Language: ${row.language}, Created: ${row.created_at}`);
+        });
+      }
+      pool.end();
+    });
   }
-  pool.end();
 });

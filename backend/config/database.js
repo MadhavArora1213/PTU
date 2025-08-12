@@ -20,6 +20,9 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
+// Log database connection details for debugging
+console.log('Database connection string:', process.env.DATABASE_URL?.substring(0, 50) + '...'); // Log first 50 chars for security
+
 // Function to initialize database tables
 const initializeDatabase = async () => {
   try {
@@ -158,8 +161,48 @@ const initializeDatabase = async () => {
     console.log('Database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
+    console.error('Error stack:', error.stack);
   }
 };
+
+// Test database connection and log details
+const testDatabaseConnection = async () => {
+  try {
+    const result = await pool.query('SELECT version()');
+    console.log('Database version:', result.rows[0].version);
+    
+    // Check if users table exists
+    const tableCheck = await pool.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'users'
+    `);
+    
+    if (tableCheck.rows.length > 0) {
+      console.log('Users table exists');
+      
+      // Check columns in users table
+      const columnCheck = await pool.query(`
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_name = 'users'
+        ORDER BY ordinal_position
+      `);
+      
+      console.log('Users table columns:');
+      columnCheck.rows.forEach(row => {
+        console.log(`  ${row.column_name} (${row.data_type})`);
+      });
+    } else {
+      console.log('Users table does not exist');
+    }
+  } catch (error) {
+    console.error('Database test error:', error);
+  }
+};
+
+// Run test after a short delay to ensure server is up
+setTimeout(testDatabaseConnection, 2000);
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
