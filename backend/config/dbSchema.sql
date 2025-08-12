@@ -1,0 +1,113 @@
+-- Database schema for ArthRakshak
+
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    user_type VARCHAR(20) CHECK (user_type IN ('student', 'salaried', 'business')),
+    language VARCHAR(10) DEFAULT 'en',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Financial goals table
+CREATE TABLE IF NOT EXISTS financial_goals (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    goal_type VARCHAR(50) NOT NULL,
+    target_amount DECIMAL(15,2),
+    current_amount DECIMAL(15,2) DEFAULT 0,
+    target_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Budget plans table
+CREATE TABLE IF NOT EXISTS budget_plans (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    month INTEGER,
+    year INTEGER,
+    income DECIMAL(15,2),
+    expenses DECIMAL(15,2),
+    savings DECIMAL(15,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Budget categories table
+CREATE TABLE IF NOT EXISTS budget_categories (
+    id SERIAL PRIMARY KEY,
+    plan_id INTEGER REFERENCES budget_plans(id),
+    category_name VARCHAR(100),
+    allocated_amount DECIMAL(15,2),
+    spent_amount DECIMAL(15,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Quiz results table
+CREATE TABLE IF NOT EXISTS quiz_results (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    quiz_topic VARCHAR(100),
+    score INTEGER,
+    total_questions INTEGER,
+    badges_earned VARCHAR(100)[],
+    points_earned INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Fraud reports table
+CREATE TABLE IF NOT EXISTS fraud_reports (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    title VARCHAR(200),
+    description TEXT,
+    location_lat DECIMAL(10, 8),
+    location_lng DECIMAL(11, 8),
+    image_url VARCHAR(500),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+    reward_points INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Financial tips table
+CREATE TABLE IF NOT EXISTS financial_tips (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200),
+    content TEXT,
+    language VARCHAR(10) DEFAULT 'en',
+    category VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User achievements table
+CREATE TABLE IF NOT EXISTS user_achievements (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    achievement_name VARCHAR(100),
+    description TEXT,
+    points INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User points table
+CREATE TABLE IF NOT EXISTS user_points (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    total_points INTEGER DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Refresh tokens table for auth
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    token VARCHAR(500) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

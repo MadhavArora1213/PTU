@@ -1,0 +1,802 @@
+{
+  "info": {
+    "name": "ArthRakshak API",
+    "description": "API for ArthRakshak - Financial Safety and Education App"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "john@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "userType",
+                  "value": "student",
+                  "type": "text"
+                },
+                {
+                  "key": "language",
+                  "value": "en",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": "{{base_url}}",
+              "path": "api/auth/register"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "john@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": "{{base_url}}",
+              "path": "api/auth/login"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "refreshToken",
+                  "value": "{{refreshToken}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh-token",
+              "host": "{{base_url}}",
+              "path": "api/auth/refresh-token"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "refreshToken",
+                  "value": "{{refreshToken}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": "{{base_url}}",
+              "path": "api/auth/logout"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": "{{base_url}}",
+              "path": "api/auth/profile"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": "{{base_url}}",
+              "path": "api/user/profile"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "John Smith",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+19876543210",
+                  "type": "text"
+                },
+                {
+                  "key": "language",
+                  "value": "hi",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": "{{base_url}}",
+              "path": "api/user/profile"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Points",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/points",
+              "host": "{{base_url}}",
+              "path": "api/user/points"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Achievements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/achievements",
+              "host": "{{base_url}}",
+              "path": "api/user/achievements"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Financial Management",
+      "item": [
+        {
+          "name": "Create Budget Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "month",
+                  "value": "10",
+                  "type": "text"
+                },
+                {
+                  "key": "year",
+                  "value": "2023",
+                  "type": "text"
+                },
+                {
+                  "key": "income",
+                  "value": "50000",
+                  "type": "text"
+                },
+                {
+                  "key": "expenses",
+                  "value": "35000",
+                  "type": "text"
+                },
+                {
+                  "key": "savings",
+                  "value": "15000",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/financial/budget",
+              "host": "{{base_url}}",
+              "path": "api/financial/budget"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Budget Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/financial/budget",
+              "host": "{{base_url}}",
+              "path": "api/financial/budget"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Budget Plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/financial/budget/1",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "budget",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Budget Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "categoryName",
+                  "value": "Groceries",
+                  "type": "text"
+                },
+                {
+                  "key": "allocatedAmount",
+                  "value": "8000",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/financial/budget/1/category",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "budget",
+                "1",
+                "category"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Financial Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "goalType",
+                  "value": "Emergency Fund",
+                  "type": "text"
+                },
+                {
+                  "key": "targetAmount",
+                  "value": "100000",
+                  "type": "text"
+                },
+                {
+                  "key": "targetDate",
+                  "value": "2024-12-31",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/financial/goals",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "goals"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Financial Goals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/financial/goals",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "goals"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Financial Goal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "currentAmount",
+                  "value": "45000",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/financial/goals/1",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "goals",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Calculate EMI",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "principal",
+                  "value": "500000",
+                  "type": "text"
+                },
+                {
+                  "key": "annualInterestRate",
+                  "value": "8.5",
+                  "type": "text"
+                },
+                {
+                  "key": "tenureInMonths",
+                  "value": "60",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/financial/calculate/emi",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "calculate",
+                "emi"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Calculate SIP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "monthlyInvestment",
+                  "value": "5000",
+                  "type": "text"
+                },
+                {
+                  "key": "annualInterestRate",
+                  "value": "12",
+                  "type": "text"
+                },
+                {
+                  "key": "investmentPeriodInYears",
+                  "value": "10",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/financial/calculate/sip",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "financial",
+                "calculate",
+                "sip"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Chatbot",
+      "item": [
+        {
+          "name": "Chat with Bot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "message",
+                  "value": "How should I budget as a student?",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/chat",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "chatbot",
+                "chat"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Therapist",
+      "item": [
+        {
+          "name": "Chat with Therapist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "message",
+                  "value": "I'm feeling stressed about my finances",
+                  "type": "text"
+                },
+                {
+                  "key": "stressLevel",
+                  "value": "7",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/therapist/chat",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "therapist",
+                "chat"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fraud Reporting",
+      "item": [
+        {
+          "name": "Submit Fraud Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Fake Banking App",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "A fraudulent app mimicking a popular bank's interface",
+                  "type": "text"
+                },
+                {
+                  "key": "locationLat",
+                  "value": "37.785834",
+                  "type": "text"
+                },
+                {
+                  "key": "locationLng",
+                  "value": "-122.406417",
+                  "type": "text"
+                },
+                {
+                  "key": "imageUrl",
+                  "value": "https://example.com/fraud-image.jpg",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/fraud/report",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "fraud",
+                "report"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fraud Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/fraud/reports",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "fraud",
+                "reports"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Fraud Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/fraud/report/1/verify",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "fraud",
+                "report",
+                "1",
+                "verify"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detect Fraud in Text",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "text",
+                  "value": "You've won a lottery! Click here to claim your prize",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/fraud/detect",
+              "host": "{{base_url}}",
+              "path": [
+                "api",
+                "fraud",
+                "detect"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ]
+}
