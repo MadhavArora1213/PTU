@@ -110,14 +110,15 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user);
+        // Generate tokens
+        const { accessToken, refreshToken } = generateTokens(user);
     
-    // Store refresh token in database (replace existing)
-    await db.query(
-      'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL \'7 days\') ON CONFLICT (user_id) DO UPDATE SET token = $2, expires_at = NOW() + INTERVAL \'7 days\'',
-      [user.id, refreshToken]
-    );
+        // Replace existing refresh token for this user (no ON CONFLICT needed)
+        await db.query('DELETE FROM refresh_tokens WHERE user_id = $1', [user.id]);
+        await db.query(
+          'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL \'7 days\')',
+          [user.id, refreshToken]
+        );
 
     res.json({
       message: 'Login successful',

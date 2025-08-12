@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import { AuthContext } from './context/AuthContext';
 // Import screens
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -90,17 +90,15 @@ function MainDrawer() {
   );
 }
 
-// Authentication stack
-function AuthStack({ onLogin }) {
+function AuthStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Login" component={LoginScreen} initialParams={{ onLogin }} />
-      <Stack.Screen name="Register" component={RegisterScreen} initialParams={{ onLogin }} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>
   );
 }
 
-// Main app component
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
@@ -110,9 +108,11 @@ export default function App() {
   };
 
   return (
-    <NavigationContainer>
-      {isLoggedIn ? <MainDrawer /> : <AuthStack onLogin={handleLogin} />}
-    </NavigationContainer>
+    <AuthContext.Provider value={{ onLogin: handleLogin, isLoggedIn }}>
+      <NavigationContainer>
+        {isLoggedIn ? <MainDrawer /> : <AuthStack />}
+      </NavigationContainer>
+    </AuthContext.Provider>
   );
 }
 

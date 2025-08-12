@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { onLogin } = useContext(AuthContext);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -38,10 +40,11 @@ const LoginScreen = ({ navigation }) => {
       setLoading(false);
       Alert.alert('Success', 'Login successful');
       // Call onLogin function if provided
-      if (navigation.getParam) {
-        const onLogin = navigation.getParam('onLogin');
-        if (onLogin) onLogin();
-      }
+      // if (navigation.getParam) {
+      //   const onLogin = navigation.getParam('onLogin');
+      //   if (onLogin) onLogin();
+      // }
+      onLogin();
     } catch (error) {
       console.error('Login error:', error);
       console.log('Error response:', error.response?.data);

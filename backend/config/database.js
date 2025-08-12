@@ -157,6 +157,11 @@ const initializeDatabase = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+        // Ensure one refresh token per user for UPSERTs
+        await pool.query(`
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
+          ON refresh_tokens (user_id)
+        `);
 
     console.log('Database tables initialized successfully');
   } catch (error) {

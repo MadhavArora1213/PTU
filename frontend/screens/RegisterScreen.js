@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import api from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -11,6 +12,7 @@ const RegisterScreen = ({ navigation }) => {
   const [userType, setUserType] = useState('student');
   const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
+  const { onLogin } = useContext(AuthContext);
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
@@ -45,14 +47,7 @@ console.log('Sending registration request to:', '/auth/register');
       Alert.alert(
         'Success',
         'Registration successful',
-        [{ text: 'OK', onPress: () => {
-          // Call onLogin function if provided
-          if (navigation.getParam) {
-            const onLogin = navigation.getParam('onLogin');
-            if (onLogin) onLogin();
-          }
-          navigation.navigate('Login');
-        }}]
+        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
       );
     } catch (error) {
       console.error('Registration error:', error);
