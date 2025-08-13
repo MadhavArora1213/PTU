@@ -41,6 +41,12 @@ const initializeDatabase = async () => {
       )
     `);
 
+    // Add missing columns to users table if they don't exist
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500)`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS account_locked_until TIMESTAMP`);
+
     // Financial goals table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS financial_goals (
@@ -157,11 +163,49 @@ const initializeDatabase = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-        // Ensure one refresh token per user for UPSERTs
-        await pool.query(`
-          CREATE UNIQUE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
-          ON refresh_tokens (user_id)
-        `);
+
+    // OTP verification table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS otp_verifications (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(100) NOT NULL,
+        otp_code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        is_verified BOOLEAN DEFAULT FALSE,
+        attempts INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Login attempts tracking table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS login_attempts (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(100) NOT NULL,
+        ip_address INET,
+        attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        success BOOLEAN DEFAULT FALSE,
+        user_agent TEXT
+      )
+    `);
+
+    // User avatars table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_avatars (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) UNIQUE,
+        avatar_url VARCHAR(500),
+        avatar_type VARCHAR(50) DEFAULT 'default',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Ensure one refresh token per user for UPSERTs
+    await pool.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
+      ON refresh_tokens (user_id)
+    `);
 
     console.log('Database tables initialized successfully');
   } catch (error) {

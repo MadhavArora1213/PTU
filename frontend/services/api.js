@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Android emulator can't reach host 'localhost'
 const baseURL =
   Platform.OS === 'android'
-    ? 'http://10.146.166.206:5000/api' // Android emulator
+    ? 'http://192.168.240.206:5000/api' // Android emulator
     : 'http://localhost:5000/api';
 
 const api = axios.create({

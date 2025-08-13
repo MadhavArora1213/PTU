@@ -11,17 +11,87 @@ const RegisterScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [userType, setUserType] = useState('student');
   const [language, setLanguage] = useState('en');
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
   const { onLogin } = useContext(AuthContext);
 
-  const handleRegister = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Error', 'Please fill in all required fields');
+  // Email validation regex
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  // Password validation regex
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  const sendOTP = async () => {
+    // Validate email first
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address');
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      console.log('Sending OTP to:', email);
+      const response = await api.post('/auth/send-otp', {
+        email,
+        language
+      });
+      console.log('OTP response:', response.data);
+      
+      setOtpLoading(false);
+      setOtpSent(true);
+      
+      // Handle development mode
+      if (response.data.developmentMode) {
+        Alert.alert(
+          'Development Mode',
+          'Email service is unavailable. The OTP has been logged to the server console. Check the terminal/logs for the OTP code.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Success',
+          'OTP sent to your email. Please check your inbox and enter the 6-digit code.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('OTP error:', error);
+      console.log('Error response:', error.response?.data);
+      setOtpLoading(false);
+      Alert.alert('Error', error.response?.data?.message || 'Failed to send OTP');
+    }
+  };
+
+  const handleRegister = async () => {
+    // Validate all fields
+    if (!name || !email || !password || !otp) {
+      Alert.alert('Error', 'Please fill in all required fields including OTP');
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (!passwordRegex.test(password)) {
+      Alert.alert(
+        'Error',
+        'Password must be at least 8 characters with uppercase, lowercase, number and special character'
+      );
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      Alert.alert('Error', 'OTP must be exactly 6 digits');
       return;
     }
 
@@ -35,10 +105,11 @@ const RegisterScreen = ({ navigation }) => {
         password,
         phone,
         userType,
-        language
+        language,
+        otp
       };
       console.log('Registration request data:', requestData);
-console.log('Sending registration request to:', '/auth/register');
+      console.log('Sending registration request to:', '/auth/register');
       const response = await api.post('/auth/register', requestData);
       console.log('Registration response:', response.data);
       console.log('Registration response status:', response.status);
@@ -46,7 +117,7 @@ console.log('Sending registration request to:', '/auth/register');
       setLoading(false);
       Alert.alert(
         'Success',
-        'Registration successful',
+        'Registration successful! You can now login.',
         [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
       );
     } catch (error) {
@@ -116,20 +187,63 @@ console.log('Sending registration request to:', '/auth/register');
             onValueChange={(itemValue) => setLanguage(itemValue)}
           >
             <Picker.Item label="English" value="en" />
-            <Picker.Item label="Hindi" value="hi" />
-            <Picker.Item label="Punjabi" value="pa" />
+            <Picker.Item label="Hindi (हिंदी)" value="hi" />
+            <Picker.Item label="Punjabi (ਪੰਜਾਬੀ)" value="pa" />
+            <Picker.Item label="Bengali (বাংলা)" value="bn" />
+            <Picker.Item label="Telugu (తెలుగు)" value="te" />
+            <Picker.Item label="Marathi (मराठी)" value="mr" />
+            <Picker.Item label="Tamil (தமிழ்)" value="ta" />
+            <Picker.Item label="Gujarati (ગુજરાતી)" value="gu" />
+            <Picker.Item label="Kannada (ಕನ್ನಡ)" value="kn" />
+            <Picker.Item label="Malayalam (മലയാളം)" value="ml" />
+            <Picker.Item label="Odia (ଓଡ଼ିଆ)" value="or" />
           </Picker>
         </View>
-        
-        <TouchableOpacity 
-          style={styles.registerButton} 
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          <Text style={styles.registerButtonText}>
-            {loading ? 'Registering...' : 'Register'}
-          </Text>
-        </TouchableOpacity>
+
+        {!otpSent ? (
+          <TouchableOpacity
+            style={styles.otpButton}
+            onPress={sendOTP}
+            disabled={otpLoading || !email}
+          >
+            <Text style={styles.otpButtonText}>
+              {otpLoading ? 'Sending OTP...' : 'Send OTP'}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChangeText={setOtp}
+              keyboardType="numeric"
+              maxLength={6}
+            />
+            
+            <View style={styles.otpActions}>
+              <TouchableOpacity
+                style={styles.resendButton}
+                onPress={sendOTP}
+                disabled={otpLoading}
+              >
+                <Text style={styles.resendButtonText}>
+                  {otpLoading ? 'Sending...' : 'Resend OTP'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.registerButton}
+              onPress={handleRegister}
+              disabled={loading || !otp}
+            >
+              <Text style={styles.registerButtonText}>
+                {loading ? 'Registering...' : 'Verify & Register'}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
         
         <TouchableOpacity 
           onPress={() => navigation.navigate('Login')}
@@ -194,6 +308,34 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 5,
     padding: 10,
+  },
+  otpButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  otpButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  otpActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  resendButton: {
+    backgroundColor: '#FF9800',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  resendButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   registerButton: {
     backgroundColor: '#2E8B57',
