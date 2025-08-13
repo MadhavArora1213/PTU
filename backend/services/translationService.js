@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cacheService = require('./cacheService');
 
 // Sarvam AI supported languages
 const supportedLanguages = {
@@ -30,14 +31,9 @@ const sarvamLanguageCodes = {
   'or': 'or-IN'
 };
 
-// Translate text using Sarvam AI
+// Translate text using Sarvam AI with Redis caching
 const translateText = async (text, targetLanguage, sourceLanguage = 'en') => {
   try {
-    if (!process.env.SARVAM_API_KEY) {
-      console.error('Sarvam API key not configured');
-      return { success: false, message: 'Translation service not configured' };
-    }
-
     // If target language is same as source, return original text
     if (targetLanguage === sourceLanguage) {
       return { success: true, translatedText: text };
@@ -48,6 +44,27 @@ const translateText = async (text, targetLanguage, sourceLanguage = 'en') => {
       return { success: false, message: 'Unsupported language' };
     }
 
+    // Check cache first
+    const cacheKey = cacheService.getTranslationCacheKey(text, targetLanguage, sourceLanguage);
+    const cachedTranslation = await cacheService.get(cacheKey);
+    
+    if (cachedTranslation) {
+      console.log('Translation found in cache');
+      return {
+        success: true,
+        translatedText: cachedTranslation.translatedText,
+        sourceLanguage: sourceLanguage,
+        targetLanguage: targetLanguage,
+        fromCache: true
+      };
+    }
+
+    if (!process.env.SARVAM_API_KEY) {
+      console.error('Sarvam API key not configured');
+      return { success: false, message: 'Translation service not configured' };
+    }
+
+    console.log('Making API call to Sarvam AI for translation');
     const response = await axios.post('https://api.sarvam.ai/translate', {
       input: text,
       source_language_code: sarvamLanguageCodes[sourceLanguage],
@@ -64,21 +81,58 @@ const translateText = async (text, targetLanguage, sourceLanguage = 'en') => {
     });
 
     if (response.data && response.data.translated_text) {
-      return {
+      const result = {
         success: true,
         translatedText: response.data.translated_text,
         sourceLanguage: sourceLanguage,
         targetLanguage: targetLanguage
       };
+
+      // Cache the translation for 24 hours (86400 seconds)
+      await cacheService.set(cacheKey, {
+        translatedText: response.data.translated_text,
+        timestamp: new Date().toISOString()
+      }, 86400);
+
+      return result;
     } else {
       return { success: false, message: 'Translation failed' };
     }
   } catch (error) {
     console.error('Translation error:', error.response?.data || error.message);
-    return { 
-      success: false, 
+    
+    // If rate limit exceeded, try to return cached version or fallback
+    if (error.response?.data?.error?.code === 'rate_limit_exceeded_error') {
+      console.log('Rate limit exceeded, checking for any cached version');
+      const cacheKey = cacheService.getTranslationCacheKey(text, targetLanguage, sourceLanguage);
+      const cachedTranslation = await cacheService.get(cacheKey);
+      
+      if (cachedTranslation) {
+        return {
+          success: true,
+          translatedText: cachedTranslation.translatedText,
+          sourceLanguage: sourceLanguage,
+          targetLanguage: targetLanguage,
+          fromCache: true,
+          rateLimited: true
+        };
+      }
+      
+      // Return original text as fallback
+      return {
+        success: true,
+        translatedText: text,
+        sourceLanguage: sourceLanguage,
+        targetLanguage: targetLanguage,
+        fallback: true,
+        rateLimited: true
+      };
+    }
+    
+    return {
+      success: false,
       message: 'Translation service error',
-      error: error.response?.data || error.message 
+      error: error.response?.data || error.message
     };
   }
 };
@@ -104,8 +158,17 @@ const translateBatch = async (texts, targetLanguage, sourceLanguage = 'en') => {
   }
 };
 
-// Get UI translations for common interface elements
+// Get UI translations for common interface elements with caching
 const getUITranslations = async (targetLanguage) => {
+  // Check cache first
+  const cacheKey = cacheService.getUITranslationCacheKey(targetLanguage);
+  const cachedUITranslations = await cacheService.get(cacheKey);
+  
+  if (cachedUITranslations) {
+    console.log('UI translations found in cache for language:', targetLanguage);
+    return { success: true, translations: cachedUITranslations };
+  }
+
   const uiElements = {
     // Navigation
     'Home': 'Home',
@@ -114,6 +177,10 @@ const getUITranslations = async (targetLanguage) => {
     'Logout': 'Logout',
     'Login': 'Login',
     'Register': 'Register',
+    'Financial Tips': 'Financial Tips',
+    'Financial Education': 'Financial Education',
+    'Helplines': 'Helplines',
+    'More': 'More',
     
     // Common buttons
     'Submit': 'Submit',
@@ -124,21 +191,34 @@ const getUITranslations = async (targetLanguage) => {
     'Back': 'Back',
     'Next': 'Next',
     'Previous': 'Previous',
+    'Call': 'Call',
+    'View All': 'View All',
     
     // Form labels
     'Name': 'Name',
+    'Full Name': 'Full Name',
     'Email': 'Email',
     'Password': 'Password',
     'Phone': 'Phone',
     'Language': 'Language',
     'User Type': 'User Type',
+    'Select Language': 'Select Language',
     
     // Messages
     'Success': 'Success',
     'Error': 'Error',
     'Warning': 'Warning',
     'Loading': 'Loading',
+    'Loading...': 'Loading...',
     'Please wait': 'Please wait',
+    'Updating...': 'Updating...',
+    'Typing...': 'Typing...',
+    
+    // Greetings
+    'Good Morning': 'Good Morning',
+    'Good Afternoon': 'Good Afternoon',
+    'Good Evening': 'Good Evening',
+    'Welcome': 'Welcome',
     
     // Financial terms
     'Budget': 'Budget',
@@ -150,23 +230,88 @@ const getUITranslations = async (targetLanguage) => {
     'SIP Calculator': 'SIP Calculator',
     'Financial Goals': 'Financial Goals',
     'Fraud Reporting': 'Fraud Reporting',
+    'Budget Planning': 'Budget Planning',
+    'Emergency Fund': 'Emergency Fund',
+    'Investment Tips': 'Investment Tips',
+    'Fraud Protection': 'Fraud Protection',
+    'Digital Banking': 'Digital Banking',
     
     // User types
     'Student': 'Student',
     'Salaried Professional': 'Salaried Professional',
-    'Business Owner': 'Business Owner'
+    'Business Owner': 'Business Owner',
+    'User': 'User',
+    
+    // Profile related
+    'Your Profile': 'Your Profile',
+    'Your Reward Points': 'Your Reward Points',
+    'Your Achievements': 'Your Achievements',
+    'Update Profile': 'Update Profile',
+    'Profile updated successfully': 'Profile updated successfully',
+    'Failed to update profile': 'Failed to update profile',
+    'Failed to fetch profile data': 'Failed to fetch profile data',
+    'Name is required': 'Name is required',
+    'Language updated successfully': 'Language updated successfully',
+    'Failed to update language': 'Failed to update language',
+    'points': 'points',
+    
+    // Helplines
+    'Emergency Helplines': 'Emergency Helplines',
+    'Tap to call for immediate assistance': 'Tap to call for immediate assistance',
+    'Call Helpline': 'Call Helpline',
+    'Cyber Crime Helpline': 'Cyber Crime Helpline',
+    'Banking Ombudsman': 'Banking Ombudsman',
+    'Consumer Helpline': 'Consumer Helpline',
+    'RBI Helpline': 'RBI Helpline',
+    'Report cyber crimes and financial frauds': 'Report cyber crimes and financial frauds',
+    'Banking complaints and grievances': 'Banking complaints and grievances',
+    'Consumer protection and complaints': 'Consumer protection and complaints',
+    'Reserve Bank of India assistance': 'Reserve Bank of India assistance',
+    'These are toll-free numbers available 24/7': 'These are toll-free numbers available 24/7',
+    'Unable to make call': 'Unable to make call',
+    
+    // Chatbot
+    'Financial Assistant': 'Financial Assistant',
+    'Online': 'Online',
+    'Type your message...': 'Type your message...',
+    
+    // Quick Actions
+    'Quick Actions': 'Quick Actions',
+    'Tip of the Day': 'Tip of the Day',
+    
+    // Placeholders
+    'Enter your full name': 'Enter your full name',
+    'Enter your phone number': 'Enter your phone number',
+    
+    // Slider content
+    'Create a monthly budget to track your income and expenses effectively': 'Create a monthly budget to track your income and expenses effectively',
+    'Build an emergency fund covering 6 months of your expenses': 'Build an emergency fund covering 6 months of your expenses',
+    'Start investing early to benefit from compound interest': 'Start investing early to benefit from compound interest',
+    'Stay alert against financial frauds and scams': 'Stay alert against financial frauds and scams',
+    'Use secure digital banking for convenient transactions': 'Use secure digital banking for convenient transactions',
+    
+    // Tips
+    'Start saving at least 20% of your income for a secure financial future': 'Start saving at least 20% of your income for a secure financial future',
+    
+    // Action descriptions
+    'Plan and track your monthly expenses': 'Plan and track your monthly expenses',
+    'Set and track your savings targets': 'Set and track your savings targets',
+    'Calculate your loan EMIs': 'Calculate your loan EMIs',
+    'Report and avoid financial scams': 'Report and avoid financial scams'
   };
 
   if (targetLanguage === 'en') {
+    // Cache English translations too
+    await cacheService.set(cacheKey, uiElements, 86400);
     return { success: true, translations: uiElements };
   }
 
   try {
     const translatedElements = {};
     
-    // Translate in batches to avoid rate limits
+    // Translate in smaller batches to avoid rate limits
     const entries = Object.entries(uiElements);
-    const batchSize = 10;
+    const batchSize = 5; // Reduced batch size
     
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = entries.slice(i, i + batchSize);
@@ -185,15 +330,25 @@ const getUITranslations = async (targetLanguage) => {
         });
       }
       
-      // Small delay between batches to respect rate limits
+      // Longer delay between batches to respect rate limits
       if (i + batchSize < entries.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
+    
+    // Cache the translated UI elements for 24 hours
+    await cacheService.set(cacheKey, translatedElements, 86400);
     
     return { success: true, translations: translatedElements };
   } catch (error) {
     console.error('UI translation error:', error);
+    
+    // If rate limited, cache and return English as fallback
+    if (error.message && error.message.includes('rate_limit_exceeded')) {
+      await cacheService.set(cacheKey, uiElements, 86400);
+      return { success: true, translations: uiElements, rateLimited: true };
+    }
+    
     return { success: false, message: 'UI translation failed', translations: uiElements };
   }
 };

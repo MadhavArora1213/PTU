@@ -1,10 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
 const RegisterScreen = ({ navigation }) => {
+  const { translate, supportedLanguages } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,12 +28,12 @@ const RegisterScreen = ({ navigation }) => {
   const sendOTP = async () => {
     // Validate email first
     if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+      Alert.alert(translate('Error', 'Error'), translate('Please enter your email address', 'Please enter your email address'));
       return;
     }
 
     if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      Alert.alert(translate('Error', 'Error'), translate('Please enter a valid email address', 'Please enter a valid email address'));
       return;
     }
 
@@ -131,125 +133,122 @@ const RegisterScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>ArthRakshak</Text>
-      <Text style={styles.subtitle}>Create your account</Text>
+      <Text style={styles.subtitle}>{translate('Create your account', 'Create your account')}</Text>
       
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="Full Name"
+          placeholder={translate('Full Name', 'Full Name')}
           value={name}
           onChangeText={setName}
+          placeholderTextColor="#999"
         />
         
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={translate('Email', 'Email')}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholderTextColor="#999"
         />
         
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={translate('Password', 'Password')}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          placeholderTextColor="#999"
         />
         
         <TextInput
           style={styles.input}
-          placeholder="Phone (optional)"
+          placeholder={translate('Phone (optional)', 'Phone (optional)')}
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
+          placeholderTextColor="#999"
         />
         
         <View style={styles.pickerContainer}>
-          <Text style={styles.pickerLabel}>User Type</Text>
+          <Text style={styles.pickerLabel}>{translate('User Type', 'User Type')}</Text>
           <Picker
             selectedValue={userType}
             style={styles.picker}
             onValueChange={(itemValue) => setUserType(itemValue)}
           >
-            <Picker.Item label="Student" value="student" />
-            <Picker.Item label="Salaried Professional" value="salaried" />
-            <Picker.Item label="Business Owner" value="business" />
+            <Picker.Item label={translate('Student', 'Student')} value="student" />
+            <Picker.Item label={translate('Salaried Professional', 'Salaried Professional')} value="salaried" />
+            <Picker.Item label={translate('Business Owner', 'Business Owner')} value="business" />
           </Picker>
         </View>
         
         <View style={styles.pickerContainer}>
-          <Text style={styles.pickerLabel}>Language</Text>
+          <Text style={styles.pickerLabel}>{translate('Language', 'Language')}</Text>
           <Picker
             selectedValue={language}
             style={styles.picker}
             onValueChange={(itemValue) => setLanguage(itemValue)}
           >
-            <Picker.Item label="English" value="en" />
-            <Picker.Item label="Hindi (हिंदी)" value="hi" />
-            <Picker.Item label="Punjabi (ਪੰਜਾਬੀ)" value="pa" />
-            <Picker.Item label="Bengali (বাংলা)" value="bn" />
-            <Picker.Item label="Telugu (తెలుగు)" value="te" />
-            <Picker.Item label="Marathi (मराठी)" value="mr" />
-            <Picker.Item label="Tamil (தமிழ்)" value="ta" />
-            <Picker.Item label="Gujarati (ગુજરાતી)" value="gu" />
-            <Picker.Item label="Kannada (ಕನ್ನಡ)" value="kn" />
-            <Picker.Item label="Malayalam (മലയാളം)" value="ml" />
-            <Picker.Item label="Odia (ଓଡ଼ିଆ)" value="or" />
+            {Object.entries(supportedLanguages).map(([code, name]) => (
+              <Picker.Item key={code} label={name} value={code} />
+            ))}
           </Picker>
         </View>
 
         {!otpSent ? (
           <TouchableOpacity
-            style={styles.otpButton}
+            style={[styles.otpButton, (!email || otpLoading) && styles.buttonDisabled]}
             onPress={sendOTP}
             disabled={otpLoading || !email}
           >
             <Text style={styles.otpButtonText}>
-              {otpLoading ? 'Sending OTP...' : 'Send OTP'}
+              {otpLoading ? translate('Sending OTP...', 'Sending OTP...') : translate('Send OTP', 'Send OTP')}
             </Text>
           </TouchableOpacity>
         ) : (
           <>
             <TextInput
               style={styles.input}
-              placeholder="Enter 6-digit OTP"
+              placeholder={translate('Enter 6-digit OTP', 'Enter 6-digit OTP')}
               value={otp}
               onChangeText={setOtp}
               keyboardType="numeric"
               maxLength={6}
+              placeholderTextColor="#999"
             />
             
             <View style={styles.otpActions}>
               <TouchableOpacity
-                style={styles.resendButton}
+                style={[styles.resendButton, otpLoading && styles.buttonDisabled]}
                 onPress={sendOTP}
                 disabled={otpLoading}
               >
                 <Text style={styles.resendButtonText}>
-                  {otpLoading ? 'Sending...' : 'Resend OTP'}
+                  {otpLoading ? translate('Sending...', 'Sending...') : translate('Resend OTP', 'Resend OTP')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              style={styles.registerButton}
+              style={[styles.registerButton, (loading || !otp) && styles.buttonDisabled]}
               onPress={handleRegister}
               disabled={loading || !otp}
             >
               <Text style={styles.registerButtonText}>
-                {loading ? 'Registering...' : 'Verify & Register'}
+                {loading ? translate('Registering...', 'Registering...') : translate('Verify & Register', 'Verify & Register')}
               </Text>
             </TouchableOpacity>
           </>
         )}
         
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
         >
           <Text style={styles.loginLink}>
-            Already have an account? Login
+            {translate('Already have an account? Login', 'Already have an account? Login')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -260,40 +259,41 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFDE7', // Cream background
     padding: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: '#2E7D32', // Primary color
     textAlign: 'center',
     marginTop: 30,
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
+    color: '#388E3C', // Secondary color
     textAlign: 'center',
     marginBottom: 30,
   },
   form: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 10,
-    elevation: 3,
+    borderRadius: 15,
+    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    borderColor: '#E8F5E9', // Light green
+    borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
+    backgroundColor: '#FFFDE7', // Cream background
   },
   pickerContainer: {
     marginBottom: 15,
@@ -301,23 +301,24 @@ const styles = StyleSheet.create({
   pickerLabel: {
     fontSize: 16,
     marginBottom: 5,
-    color: '#333',
+    color: '#2E7D32', // Primary color
+    fontWeight: 'bold',
   },
   picker: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
+    borderColor: '#E8F5E9',
+    borderRadius: 10,
+    backgroundColor: '#FFFDE7',
   },
   otpButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#388E3C', // Secondary color
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
   otpButtonText: {
-    color: 'white',
+    color: '#FFFDE7', // Cream text
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -327,33 +328,38 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   resendButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: '#FFEB3B', // Accent color
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
     alignItems: 'center',
   },
   resendButtonText: {
-    color: 'white',
+    color: '#2E7D32',
     fontSize: 14,
     fontWeight: 'bold',
   },
   registerButton: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: '#2E7D32', // Primary color
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
   registerButtonText: {
-    color: 'white',
+    color: '#FFFDE7', // Cream text
     fontSize: 16,
     fontWeight: 'bold',
   },
   loginLink: {
     textAlign: 'center',
-    color: '#2E8B57',
+    color: '#2E7D32', // Primary color
     marginTop: 20,
-    textDecorationLine: 'underline',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonDisabled: {
+    backgroundColor: '#E8F5E9', // Light green
+    opacity: 0.6,
   },
 });
 

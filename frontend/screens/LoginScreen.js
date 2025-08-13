@@ -3,16 +3,18 @@ import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'reac
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { onLogin } = useContext(AuthContext);
+  const { translate } = useLanguage();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(translate('Error', 'Error'), translate('Please fill in all fields', 'Please fill in all fields'));
       return;
     }
 
@@ -38,7 +40,7 @@ const LoginScreen = ({ navigation }) => {
       }
       
       setLoading(false);
-      Alert.alert('Success', 'Login successful');
+      Alert.alert(translate('Success', 'Success'), translate('Login successful', 'Login successful'));
       // Call onLogin function if provided
       // if (navigation.getParam) {
       //   const onLogin = navigation.getParam('onLogin');
@@ -49,48 +51,50 @@ const LoginScreen = ({ navigation }) => {
       console.error('Login error:', error);
       console.log('Error response:', error.response?.data);
       setLoading(false);
-      Alert.alert('Error', error.response?.data?.message || 'Login failed');
+      Alert.alert(translate('Error', 'Error'), error.response?.data?.message || translate('Login failed', 'Login failed'));
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>ArthRakshak</Text>
-      <Text style={styles.subtitle}>Login to your account</Text>
+      <Text style={styles.subtitle}>{translate('Login to your account', 'Login to your account')}</Text>
       
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={translate('Email', 'Email')}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholderTextColor="#999"
         />
         
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={translate('Password', 'Password')}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          placeholderTextColor="#999"
         />
         
-        <TouchableOpacity 
-          style={styles.loginButton} 
+        <TouchableOpacity
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
           onPress={handleLogin}
           disabled={loading}
         >
           <Text style={styles.loginButtonText}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? translate('Logging in...', 'Logging in...') : translate('Login', 'Login')}
           </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.navigate('Register')}
         >
           <Text style={styles.registerLink}>
-            Don't have an account? Register
+            {translate('Don\'t have an account? Register', 'Don\'t have an account? Register')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -101,58 +105,63 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFDE7', // Cream background
     padding: 20,
     justifyContent: 'center',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: '#2E7D32', // Primary color
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
+    color: '#388E3C', // Secondary color
     textAlign: 'center',
     marginBottom: 30,
   },
   form: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 10,
-    elevation: 3,
+    borderRadius: 15,
+    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    borderColor: '#E8F5E9', // Light green
+    borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
+    backgroundColor: '#FFFDE7', // Cream background
   },
   loginButton: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: '#2E7D32', // Primary color
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
+  loginButtonDisabled: {
+    backgroundColor: '#E8F5E9', // Light green
+  },
   loginButtonText: {
-    color: 'white',
+    color: '#FFFDE7', // Cream text
     fontSize: 16,
     fontWeight: 'bold',
   },
   registerLink: {
     textAlign: 'center',
-    color: '#2E8B57',
+    color: '#2E7D32', // Primary color
     marginTop: 20,
-    textDecorationLine: 'underline',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

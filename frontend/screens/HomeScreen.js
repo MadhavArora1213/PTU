@@ -1,173 +1,313 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useLanguage } from '../context/LanguageContext';
+import ImageSlider from '../components/ImageSlider';
+import HelplineNumbers from '../components/HelplineNumbers';
+import FloatingChatbot from '../components/FloatingChatbot';
+import api from '../services/api';
 
 const HomeScreen = ({ navigation }) => {
+  const { translate } = useLanguage();
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      // Check if user is logged in by checking for token
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const token = await AsyncStorage.getItem('token');
+      
+      if (token) {
+        // User is logged in, try to fetch profile
+        const response = await api.get('/user/profile');
+        setUserData(response.data.user);
+      } else {
+        // User is not logged in, use default data
+        setUserData({ name: translate('Guest User', 'Guest User') });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      // Don't show error alert, just use default data
+      setUserData({ name: translate('Guest User', 'Guest User') });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return translate('Good Morning', 'Good Morning');
+    } else if (hour < 17) {
+      return translate('Good Afternoon', 'Good Afternoon');
+    } else {
+      return translate('Good Evening', 'Good Evening');
+    }
+  };
+
+  const quickActions = [
+    {
+      id: 1,
+      title: 'Budget Planner',
+      description: 'Plan and track your monthly expenses',
+      icon: 'account-balance-wallet',
+      screen: 'Budget Planner',
+      color: '#2E7D32'
+    },
+    {
+      id: 2,
+      title: 'Financial Goals',
+      description: 'Set and track your savings targets',
+      icon: 'flag',
+      screen: 'Financial Goals',
+      color: '#388E3C'
+    },
+    {
+      id: 3,
+      title: 'EMI Calculator',
+      description: 'Calculate your loan EMIs',
+      icon: 'calculate',
+      screen: 'EMI Calculator',
+      color: '#43A047'
+    },
+    {
+      id: 4,
+      title: 'Fraud Shield',
+      description: 'Report and avoid financial scams',
+      icon: 'security',
+      screen: 'Fraud Shield',
+      color: '#4CAF50'
+    }
+  ];
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome to ArthRakshak</Text>
-        <Text style={styles.subtitle}>Your Financial Safety & Education Companion</Text>
-      </View>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header with user greeting */}
+        <View style={styles.header}>
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.userName}>
+              {loading ? translate('Loading...', 'Loading...') : userData?.name || translate('User', 'User')}
+            </Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Icon name="account-circle" size={40} color="#FFFDE7" />
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.featureGrid}>
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('Budget')}
-        >
-          <Icon name="account-balance-wallet" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Budget Planner</Text>
-          <Text style={styles.featureDescription}>Plan and track your monthly expenses</Text>
-        </TouchableOpacity>
+        {/* Image Slider */}
+        <ImageSlider />
 
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('Goals')}
-        >
-          <Icon name="flag" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Financial Goals</Text>
-          <Text style={styles.featureDescription}>Set and track your savings targets</Text>
-        </TouchableOpacity>
+        {/* Quick Actions */}
+        <View style={styles.quickActionsContainer}>
+          <Text style={styles.sectionTitle}>
+            {translate('Quick Actions', 'Quick Actions')}
+          </Text>
+          <View style={styles.quickActionsGrid}>
+            {quickActions.map((action) => (
+              <TouchableOpacity
+                key={action.id}
+                style={[styles.actionCard, { borderLeftColor: action.color }]}
+                onPress={() => navigation.navigate(action.screen)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
+                  <Icon name={action.icon} size={24} color="#FFFDE7" />
+                </View>
+                <View style={styles.actionContent}>
+                  <Text style={styles.actionTitle}>
+                    {translate(action.title, action.title)}
+                  </Text>
+                  <Text style={styles.actionDescription}>
+                    {translate(action.description, action.description)}
+                  </Text>
+                </View>
+                <Icon name="chevron-right" size={20} color="#388E3C" />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('Chatbot')}
-        >
-          <Icon name="chat" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Financial Chatbot</Text>
-          <Text style={styles.featureDescription}>Get personalized financial advice</Text>
-        </TouchableOpacity>
+        {/* Helpline Numbers */}
+        <HelplineNumbers />
 
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('Tips')}
-        >
-          <Icon name="lightbulb-outline" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Financial Tips</Text>
-          <Text style={styles.featureDescription}>Daily tips to improve your finances</Text>
-        </TouchableOpacity>
+        {/* Financial Tips Section */}
+        <View style={styles.tipsSection}>
+          <View style={styles.tipsSectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {translate('Financial Tips', 'Financial Tips')}
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Tips')}>
+              <Text style={styles.viewAllText}>
+                {translate('View All', 'View All')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.tipCard}
+            onPress={() => navigation.navigate('Tips')}
+          >
+            <View style={styles.tipIcon}>
+              <Icon name="lightbulb-outline" size={24} color="#FFEB3B" />
+            </View>
+            <View style={styles.tipContent}>
+              <Text style={styles.tipTitle}>
+                {translate('Tip of the Day', 'Tip of the Day')}
+              </Text>
+              <Text style={styles.tipText}>
+                {translate('Start saving at least 20% of your income for a secure financial future', 'Start saving at least 20% of your income for a secure financial future')}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('Quiz')}
-        >
-          <Icon name="quiz" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Financial Quiz</Text>
-          <Text style={styles.featureDescription}>Test your financial knowledge</Text>
-        </TouchableOpacity>
+        {/* Bottom spacing for floating chatbot */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
 
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('FraudShield')}
-        >
-          <Icon name="security" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Fraud Shield</Text>
-          <Text style={styles.featureDescription}>Report and avoid financial scams</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('Therapist')}
-        >
-          <Icon name="healing" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>Financial Therapist</Text>
-          <Text style={styles.featureDescription}>Get stress-relief financial advice</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.featureCard} 
-          onPress={() => navigation.navigate('EMI Calculator')}
-        >
-          <Icon name="calculate" size={40} color="#2E8B57" />
-          <Text style={styles.featureTitle}>EMI Calculator</Text>
-          <Text style={styles.featureDescription}>Calculate your loan EMIs</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.calculatorsSection}>
-        <Text style={styles.sectionTitle}>Quick Calculators</Text>
-        <TouchableOpacity 
-          style={styles.calculatorButton}
-          onPress={() => navigation.navigate('SIP Calculator')}
-        >
-          <Text style={styles.calculatorButtonText}>SIP Calculator</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      {/* Floating Chatbot */}
+      <FloatingChatbot />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFDE7', // Cream background
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: '#2E7D32', // Primary color
     padding: 20,
     paddingTop: 50,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 5,
+  greetingContainer: {
+    flex: 1,
   },
-  subtitle: {
+  greeting: {
     fontSize: 16,
-    color: 'white',
+    color: '#FFFDE7', // Cream text
     opacity: 0.9,
   },
-  featureGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 10,
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFDE7', // Cream text
+    marginTop: 4,
   },
-  featureCard: {
-    width: '45%',
-    backgroundColor: 'white',
-    borderRadius: 10,
+  profileButton: {
+    padding: 5,
+  },
+  quickActionsContainer: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2E7D32', // Primary color
+    marginBottom: 15,
+  },
+  quickActionsGrid: {
+    gap: 12,
+  },
+  actionCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: 15,
-    margin: 5,
+    flexDirection: 'row',
     alignItems: 'center',
+    borderLeftWidth: 4,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  featureTitle: {
+  actionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  actionContent: {
+    flex: 1,
+  },
+  actionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
-    marginTop: 10,
-    textAlign: 'center',
+    color: '#2E7D32',
+    marginBottom: 4,
   },
-  featureDescription: {
+  actionDescription: {
     fontSize: 12,
     color: '#666',
-    textAlign: 'center',
-    marginTop: 5,
+    lineHeight: 16,
   },
-  calculatorsSection: {
+  tipsSection: {
     padding: 20,
+    paddingTop: 0,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+  tipsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 15,
   },
-  calculatorButton: {
-    backgroundColor: '#FFD700',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
+  viewAllText: {
+    fontSize: 14,
+    color: '#388E3C',
+    fontWeight: '600',
   },
-  calculatorButtonText: {
+  tipCard: {
+    backgroundColor: '#E8F5E9', // Light green
+    borderRadius: 12,
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  tipIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2E7D32',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  tipContent: {
+    flex: 1,
+  },
+  tipTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#2E7D32',
+    marginBottom: 6,
+  },
+  tipText: {
+    fontSize: 14,
+    color: '#388E3C',
+    lineHeight: 20,
+  },
+  bottomSpacing: {
+    height: 100, // Space for floating chatbot
   },
 });
 

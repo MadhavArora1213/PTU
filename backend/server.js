@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5003;
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:8083'],
+  origin: ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:8082', 'http://localhost:8083', 'http://10.146.166.206:8082', 'http://192.168.137.8:8082'],
   credentials: true
 })); // Enable CORS
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
@@ -59,6 +59,7 @@ app.use('/api/financial', require('./routes/financialRoutes'));
 app.use('/api/chatbot', require('./routes/chatbotRoutes'));
 app.use('/api/fraud', require('./routes/fraudRoutes'));
 app.use('/api/therapist', require('./routes/therapistRoutes'));
+app.use('/api/translation', require('./routes/translationRoutes'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'ArthRakshak Backend API' });

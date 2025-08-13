@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import axios from 'axios';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useLanguage } from '../context/LanguageContext';
+import api from '../services/api';
 
 const ChatbotScreen = () => {
+  const { translate } = useLanguage();
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your financial assistant. How can I help you today?", sender: 'bot' }
+    { id: 1, text: "Hello! I'm your financial assistant. How can I help you today?", sender: 'bot', timestamp: new Date() }
   ]);
   const [inputText, setInputText] = useState('');
   const [userType, setUserType] = useState('student'); // Default user type
+  const [isLoading, setIsLoading] = useState(false);
 
   // Simulate getting user type from profile
   useEffect(() => {
@@ -49,92 +53,135 @@ const ChatbotScreen = () => {
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
     // Add user message
     const userMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       text: inputText,
-      sender: 'user'
+      sender: 'user',
+      timestamp: new Date()
     };
 
     setMessages(prevMessages => [...prevMessages, userMessage]);
+    const currentInput = inputText;
     setInputText('');
+    setIsLoading(true);
 
-    // Simulate bot thinking
-    setTimeout(() => {
+    try {
+      // Try to get response from backend chatbot service
+      const response = await api.post('/chatbot/chat', {
+        message: currentInput
+      });
+
       const botResponse = {
-        id: messages.length + 2,
-        text: getBotResponse(inputText),
-        sender: 'bot'
+        id: Date.now() + 1,
+        text: response.data.response || getBotResponse(currentInput),
+        sender: 'bot',
+        timestamp: new Date()
       };
       setMessages(prevMessages => [...prevMessages, botResponse]);
-    }, 1000);
+    } catch (error) {
+      // Fallback to local bot response
+      const botResponse = {
+        id: Date.now() + 1,
+        text: getBotResponse(currentInput),
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      setMessages(prevMessages => [...prevMessages, botResponse]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickQuestion = (question) => {
     setInputText(question);
   };
 
+  const formatTime = (timestamp) => {
+    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Financial Chatbot</Text>
-        <Text style={styles.subtitle}>Ask me anything about finance</Text>
+        <Text style={styles.title}>{translate('Financial Chatbot', 'Financial Chatbot')}</Text>
+        <Text style={styles.subtitle}>{translate('Ask me anything about finance', 'Ask me anything about finance')}</Text>
       </View>
 
-      <ScrollView style={styles.chatContainer} 
+      <ScrollView style={styles.chatContainer}
         contentContainerStyle={styles.chatContent}
         ref={ref => { this.scrollView = ref; }}
         onContentSizeChange={() => this.scrollView.scrollToEnd({animated: true})}
       >
         {messages.map((message) => (
-          <View 
-            key={message.id} 
+          <View
+            key={message.id}
             style={[
-              styles.messageContainer, 
+              styles.messageContainer,
               message.sender === 'user' ? styles.userMessageContainer : styles.botMessageContainer
             ]}
           >
-            <Text style={[
-              styles.messageText, 
-              message.sender === 'user' ? styles.userMessageText : styles.botMessageText
+            <View style={[
+              styles.messageBubble,
+              message.sender === 'user' ? styles.userMessage : styles.botMessage
             ]}>
-              {message.text}
-            </Text>
+              <Text style={[
+                styles.messageText,
+                message.sender === 'user' ? styles.userMessageText : styles.botMessageText
+              ]}>
+                {message.text}
+              </Text>
+              {message.timestamp && (
+                <Text style={[
+                  styles.messageTime,
+                  message.sender === 'user' ? styles.userMessageTime : styles.botMessageTime
+                ]}>
+                  {formatTime(message.timestamp)}
+                </Text>
+              )}
+            </View>
           </View>
         ))}
+        {isLoading && (
+          <View style={styles.botMessageContainer}>
+            <View style={[styles.messageBubble, styles.botMessage]}>
+              <Text style={styles.typingText}>{translate('Typing...', 'Typing...')}</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.quickQuestions}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickQuestionButton}
             onPress={() => handleQuickQuestion("How should I budget as a student?")}
           >
-            <Text style={styles.quickQuestionText}>Budget Tips</Text>
+            <Text style={styles.quickQuestionText}>{translate('Budget Tips', 'Budget Tips')}</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickQuestionButton}
             onPress={() => handleQuickQuestion("How can I save more money?")}
           >
-            <Text style={styles.quickQuestionText}>Saving Tips</Text>
+            <Text style={styles.quickQuestionText}>{translate('Saving Tips', 'Saving Tips')}</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickQuestionButton}
             onPress={() => handleQuickQuestion("What are good investment options?")}
           >
-            <Text style={styles.quickQuestionText}>Investments</Text>
+            <Text style={styles.quickQuestionText}>{translate('Investments', 'Investments')}</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickQuestionButton}
             onPress={() => handleQuickQuestion("How to avoid financial scams?")}
           >
-            <Text style={styles.quickQuestionText}>Fraud Prevention</Text>
+            <Text style={styles.quickQuestionText}>{translate('Fraud Prevention', 'Fraud Prevention')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -144,11 +191,16 @@ const ChatbotScreen = () => {
           style={styles.textInput}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Type your financial question..."
+          placeholder={translate('Type your financial question...', 'Type your financial question...')}
+          placeholderTextColor="#999"
           multiline
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Text style={styles.sendButtonText}>Send</Text>
+        <TouchableOpacity
+          style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+          onPress={handleSend}
+          disabled={!inputText.trim() || isLoading}
+        >
+          <Icon name="send" size={20} color="#FFFDE7" />
         </TouchableOpacity>
       </View>
     </View>
@@ -158,43 +210,51 @@ const ChatbotScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFDE7', // Cream background
   },
   header: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: '#2E7D32', // Primary color
     padding: 20,
     paddingTop: 50,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#FFFDE7', // Cream text
   },
   subtitle: {
     fontSize: 16,
-    color: 'white',
+    color: '#FFFDE7', // Cream text
     opacity: 0.9,
   },
   chatContainer: {
     flex: 1,
-    padding: 10,
+    padding: 15,
   },
   chatContent: {
     paddingBottom: 10,
   },
   messageContainer: {
-    maxWidth: '80%',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 10,
+    marginVertical: 4,
   },
   userMessageContainer: {
-    backgroundColor: '#2E8B57',
-    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
   },
   botMessageContainer: {
-    backgroundColor: 'white',
-    alignSelf: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    padding: 12,
+    borderRadius: 18,
+  },
+  userMessage: {
+    backgroundColor: '#2E7D32', // Primary color
+    borderBottomRightRadius: 4,
+  },
+  botMessage: {
+    backgroundColor: '#E8F5E9', // Light green
+    borderBottomLeftRadius: 4,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -202,54 +262,78 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   messageText: {
-    fontSize: 16,
+    fontSize: 14,
+    lineHeight: 20,
   },
   userMessageText: {
-    color: 'white',
+    color: '#FFFDE7', // Cream text
   },
   botMessageText: {
-    color: '#333',
+    color: '#2E7D32', // Primary color
+  },
+  messageTime: {
+    fontSize: 10,
+    marginTop: 4,
+  },
+  userMessageTime: {
+    color: '#FFFDE7',
+    opacity: 0.7,
+  },
+  botMessageTime: {
+    color: '#388E3C',
+  },
+  typingText: {
+    color: '#388E3C',
+    fontStyle: 'italic',
   },
   quickQuestions: {
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#E8F5E9', // Light green
   },
   quickQuestionButton: {
-    backgroundColor: '#FFD700',
+    backgroundColor: '#FFEB3B', // Accent color
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
     marginRight: 10,
   },
   quickQuestionText: {
-    color: '#333',
+    color: '#2E7D32',
     fontSize: 14,
     fontWeight: 'bold',
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
-    backgroundColor: 'white',
+    padding: 15,
+    backgroundColor: '#fff',
     alignItems: 'flex-end',
+    borderTopWidth: 1,
+    borderTopColor: '#E8F5E9',
   },
   textInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E8F5E9',
     borderRadius: 20,
-    padding: 10,
+    padding: 12,
     marginRight: 10,
     maxHeight: 100,
+    backgroundColor: '#FFFDE7',
   },
   sendButton: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: '#2E7D32', // Primary color
     borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#E8F5E9',
   },
   sendButtonText: {
-    color: 'white',
+    color: '#FFFDE7',
     fontWeight: 'bold',
   },
 });
