@@ -1,0 +1,87 @@
+{
+  "name": "fraud-protection-admin-panel",
+  "version": "1.0.0",
+  "description": "Admin panel for managing fraud protection app content, user progress, and analytics",
+  "private": true,
+  "homepage": ".",
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "axios": "^1.6.8",
+    "lucide-react": "^0.263.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.4.1",
+    "react-router-dom": "^7.7.1",
+    "react-scripts": "5.0.1",
+    "recharts": "^2.7.2",
+    "web-vitals": "^3.3.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.3.6"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{js,jsx,ts,tsx,json,css,md}",
+    "analyze": "npm run build && npx bundle-analyzer build/static/js/*.js",
+    "serve": "serve -s build -l 3001"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "rules": {
+      "no-unused-vars": "warn",
+      "no-console": "warn",
+      "prefer-const": "error",
+      "no-var": "error"
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "keywords": [
+    "fraud-protection",
+    "admin-panel",
+    "financial-education",
+    "react",
+    "dashboard",
+    "analytics",
+    "content-management"
+  ],
+  "author": "Fraud Protection Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fraud-protection/admin-panel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fraud-protection/admin-panel/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "proxy": "http://localhost:5000"
+}

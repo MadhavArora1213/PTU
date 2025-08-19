@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10b981" />
+    <meta name="description" content="Fraud Protection App - Admin Panel for managing financial education content, user progress, and system analytics." />
+    <meta name="keywords" content="fraud protection, financial education, admin panel, security, tutorials, simulations" />
+    <meta name="author" content="Fraud Protection Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://admin.fraudprotection.app/" />
+    <meta property="og:title" content="Fraud Protection Admin Panel" />
+    <meta property="og:description" content="Comprehensive admin panel for managing financial education content and user analytics." />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://admin.fraudprotection.app/" />
+    <meta property="twitter:title" content="Fraud Protection Admin Panel" />
+    <meta property="twitter:description" content="Comprehensive admin panel for managing financial education content and user analytics." />
+    <meta property="twitter:image" content="%PUBLIC_URL%/twitter-image.png" />
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://backend.omnidim.io">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS Variables -->
+    <style>
+      :root {
+        --primary-color: #10b981;
+        --primary-dark: #059669;
+        --secondary-color: #6b7280;
+        --background-color: #f9fafb;
+        --surface-color: #ffffff;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --border-radius: 0.5rem;
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      }
+      
+      * {
+        box-sizing: border-box;
+      }
+      
+      body {
+        margin: 0;
+        font-family: var(--font-family);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: var(--background-color);
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+      
+      /* Loading screen styles */
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      .loading-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loading-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: pulse 2s infinite;
+      }
+      
+      .loading-text {
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      
+      .loading-subtext {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-top: 24px;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Error boundary styles */
+      .error-boundary {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background-color: var(--background-color);
+      }
+      
+      .error-content {
+        text-align: center;
+        max-width: 500px;
+      }
+      
+      .error-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        color: #ef4444;
+      }
+      
+      .error-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+      }
+      
+      .error-message {
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+      
+      .error-button {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      
+      .error-button:hover {
+        background: var(--primary-dark);
+      }
+      
+      /* Accessibility improvements */
+      @media (prefers-reduced-motion: reduce) {
+        .loading-logo,
+        .loading-spinner {
+          animation: none;
+        }
+      }
+      
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        :root {
+          --border-color: #000000;
+          --text-secondary: #000000;
+        }
+      }
+      
+      /* Print styles */
+      @media print {
+        .loading-screen {
+          display: none;
+        }
+      }
+    </style>
+    
+    <title>Fraud Protection Admin Panel</title>
+  </head>
+  <body>
+    <noscript>
+      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>You need to enable JavaScript to run this application.</p>
+        <p>This admin panel requires JavaScript for full functionality including:</p>
+        <ul style="text-align: left; display: inline-block;">
+          <li>Real-time data updates</li>
+          <li>Interactive charts and analytics</li>
+          <li>Content management features</li>
+          <li>User progress tracking</li>
+        </ul>
+        <p>Please enable JavaScript in your browser settings and refresh the page.</p>
+      </div>
+    </noscript>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-logo">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#10b981" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="#10b981" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="#10b981" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="loading-text">Fraud Protection Admin</div>
+      <div class="loading-subtext">Loading dashboard...</div>
+      <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- React App Root -->
+    <div id="root"></div>
+    
+    <!-- Omnidim.io Chatbot Widget -->
+    <script id="omnidimension-web-widget" async src="https://backend.omnidim.io/web_widget.js?secret_key=f7dd22fc70eb6c18ec2c3fb51f35daf5"></script>
+    
+    <!-- Loading Screen Script -->
+    <script>
+      // Hide loading screen when React app loads
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen) {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(function() {
+              loadingScreen.style.display = 'none';
+            }, 500);
+          }
+        }, 1000); // Show loading for at least 1 second
+      });
+      
+      // Error handling for failed script loads
+      window.addEventListener('error', function(e) {
+        console.error('Script loading error:', e);
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.innerHTML = `
+            <div class="error-content">
+              <div class="error-title">Loading Error</div>
+              <div class="error-message">Failed to load the application. Please check your internet connection and try again.</div>
+              <button class="error-button" onclick="window.location.reload()">Retry</button>
+            </div>
+          `;
+        }
+      });
+      
+      // Service Worker Registration (for future PWA support)
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
